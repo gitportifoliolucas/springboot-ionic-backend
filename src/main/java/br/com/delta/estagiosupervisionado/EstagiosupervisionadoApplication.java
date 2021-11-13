@@ -1,5 +1,6 @@
 package br.com.delta.estagiosupervisionado;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,20 @@ import br.com.delta.estagiosupervisionado.domain.Cidade;
 import br.com.delta.estagiosupervisionado.domain.Cliente;
 import br.com.delta.estagiosupervisionado.domain.Endereco;
 import br.com.delta.estagiosupervisionado.domain.Estado;
+import br.com.delta.estagiosupervisionado.domain.Pagamento;
+import br.com.delta.estagiosupervisionado.domain.PagamentoComBoleto;
+import br.com.delta.estagiosupervisionado.domain.PagamentoComCartao;
+import br.com.delta.estagiosupervisionado.domain.Pedido;
 import br.com.delta.estagiosupervisionado.domain.Produto;
+import br.com.delta.estagiosupervisionado.domain.enums.EstadoPagamento;
 import br.com.delta.estagiosupervisionado.domain.enums.TipoCliente;
 import br.com.delta.estagiosupervisionado.repositories.CategoriaRepository;
 import br.com.delta.estagiosupervisionado.repositories.CidadeRepository;
 import br.com.delta.estagiosupervisionado.repositories.ClienteRepository;
 import br.com.delta.estagiosupervisionado.repositories.EnderecoRepository;
 import br.com.delta.estagiosupervisionado.repositories.EstadoRepository;
+import br.com.delta.estagiosupervisionado.repositories.PagamentoRepository;
+import br.com.delta.estagiosupervisionado.repositories.PedidoRepository;
 import br.com.delta.estagiosupervisionado.repositories.ProdutoRepository;
 
 @SpringBootApplication
@@ -36,6 +44,10 @@ public class EstagiosupervisionadoApplication implements CommandLineRunner {
 	private ClienteRepository clienteRepository;
 	@Autowired
 	private EnderecoRepository enderecoRepository;
+	@Autowired
+	private PedidoRepository pedidoRepository;
+	@Autowired
+	private PagamentoRepository pagamentoRepository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(EstagiosupervisionadoApplication.class, args);
@@ -85,6 +97,24 @@ public class EstagiosupervisionadoApplication implements CommandLineRunner {
 
 		clienteRepository.saveAll(Arrays.asList(cli1));
 		enderecoRepository.saveAll(Arrays.asList(e1, e2));
+
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+		Pedido ped1 = new Pedido(null, sdf.parse("30/09/2017 10:32"), cli1, e1);
+		Pedido ped2 = new Pedido(null, sdf.parse("10/10/2017 19:35"), cli1, e2);
+
+		cli1.getPedidos().addAll(Arrays.asList(ped1, ped2));
+
+		Pagamento pagto1 = new PagamentoComCartao(null, EstadoPagamento.QUITADO, ped1, 6);
+		ped1.setPagamento(pagto1);
+
+		Pagamento pagto2 = new PagamentoComBoleto(null, EstadoPagamento.PENDENTE, ped2, sdf.parse("20/10/2017 00:00"),
+				null);
+		ped2.setPagamento(pagto2);
+
+		pedidoRepository.saveAll(Arrays.asList(ped1, ped2));
+		pagamentoRepository.saveAll(Arrays.asList(pagto1, pagto2));
+
 	}
 
 }
